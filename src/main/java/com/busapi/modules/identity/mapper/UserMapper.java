@@ -1,4 +1,4 @@
-package com.busapi.modules.identity.util;
+package com.busapi.modules.identity.mapper;
 
 import com.busapi.modules.identity.dto.CreateUserRequest;
 import com.busapi.modules.identity.dto.UserResponse;

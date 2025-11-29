@@ -8,7 +8,7 @@ import com.busapi.modules.identity.entity.Agency;
 import com.busapi.modules.identity.entity.User;
 import com.busapi.modules.identity.repository.AgencyRepository;
 import com.busapi.modules.identity.repository.UserRepository;
-import com.busapi.modules.identity.util.UserMapper;
+import com.busapi.modules.identity.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
