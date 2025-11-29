@@ -41,10 +41,10 @@ public class User extends BaseEntity implements UserDetails {
     @Column(nullable = false)
     private UserRole role;
 
-//    // Acenta çalışanı ise bağlı olduğu acenta
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "agency_id")
-//    private Agency agency;
+    // Acenta çalışanı ise bağlı olduğu acenta
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "agency_id")
+    private Agency agency;
 //
 //    // --- UserDetails Implementation ---
 
