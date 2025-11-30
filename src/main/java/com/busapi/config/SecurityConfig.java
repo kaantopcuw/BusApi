@@ -16,28 +16,34 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity(securedEnabled = true) // @PreAuthorize kullanabilmek için
+@EnableMethodSecurity(securedEnabled = true)
 @RequiredArgsConstructor
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
-    private final AuthenticationProvider authenticationProvider; // Bean olarak tanımlanacak
+    private final AuthenticationProvider authenticationProvider;
 
-    // Endpoint kuralları
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(AbstractHttpConfigurer::disable) // Stateless olduğu için CSRF kapalı
-                .cors(Customizer.withDefaults())       // Frontend için CORS açık
+                .csrf(AbstractHttpConfigurer::disable)
+                .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth
-                        // Public endpointler
+                        // --- PUBLIC ENDPOINTS ---
                         .requestMatchers(
-                                "/api/v1/auth/**",
-                                "/api/v1/public/**",
-                                "/v3/api-docs/**", // Swagger
-                                "/swagger-ui/**"
+                                "/api/v1/auth/**",          // Auth modülü
+                                "/api/v1/public/**",        // Varsa public API'ler
+                                "/api/v1/locations/**",     // Lokasyonları public yapmıştık
+                                "/api/v1/sales/trip/*/seats", // Koltuk durumu public
+                                "/api/v1/voyages/trips/search", // Sefer arama public
+
+                                // --- SWAGGER UI & OPENAPI ---
+                                "/v3/api-docs/**",          // OpenAPI JSON verisi
+                                "/swagger-ui/**",           // Swagger Arayüz dosyaları (CSS, JS, HTML)
+                                "/swagger-ui.html"          // Swagger Ana sayfası
                         ).permitAll()
-                        // Diğer her şey auth ister
+
+                        // --- DİĞER HER ŞEY İÇİN TOKEN ŞART ---
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
