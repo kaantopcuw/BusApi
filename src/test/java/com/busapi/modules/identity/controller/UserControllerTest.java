@@ -24,6 +24,8 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.UUID;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
@@ -86,7 +88,7 @@ class UserControllerTest {
         request.setRole(UserRole.ROLE_AGENCY_STAFF);
 
         UserResponse mockResponse = new UserResponse();
-        mockResponse.setId(1L);
+        mockResponse.setId(UUID.fromString("00000000-0000-0000-0000-000000000001"));
         mockResponse.setEmail("ali@test.com");
         mockResponse.setRole(UserRole.ROLE_AGENCY_STAFF);
 
@@ -142,7 +144,7 @@ class UserControllerTest {
     @DisplayName("Kullanıcı kendi profilini görüntüleyebilmeli")
     @WithMockUser(username = "kendi@mail.com", roles = "CUSTOMER")
     void getUserById_WhenOwnProfile_ShouldReturnSuccess() throws Exception {
-        Long userId = 100L;
+        UUID userId = UUID.fromString("00000000-0000-0000-0000-000000000100");
         UserResponse response = new UserResponse();
         response.setId(userId);
 
@@ -152,14 +154,14 @@ class UserControllerTest {
         mockMvc.perform(get("/api/v1/users/{id}", userId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.id").value(userId));
+                .andExpect(jsonPath("$.data.id").value(userId.toString()));
     }
 
     @Test
     @DisplayName("Kullanıcı başkasının profilini görüntülemeye çalışırsa 403 almalı")
     @WithMockUser(username = "hacker@mail.com", roles = "CUSTOMER")
     void getUserById_WhenOtherProfile_ShouldReturnForbidden() throws Exception {
-        Long targetUserId = 200L;
+        UUID targetUserId = UUID.fromString("00000000-0000-0000-0000-000000000200");
 
         when(userSecurity.isCurrentUser(targetUserId)).thenReturn(false);
 

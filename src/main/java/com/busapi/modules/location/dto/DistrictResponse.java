@@ -2,9 +2,11 @@ package com.busapi.modules.location.dto;
 
 import lombok.Data;
 
+import java.util.UUID;
+
 @Data
 public class DistrictResponse {
-    private Long id;
+    private UUID id;
     private String name;
-    private Long cityId;
+    private UUID cityId;
 }

@@ -6,6 +6,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
+import java.util.UUID;
+
 @Data
 public class CreateUserRequest {
     @NotBlank(message = "Ad zorunludur")
@@ -30,7 +32,7 @@ public class CreateUserRequest {
     private UserRole role;
 
     // Eğer personel ise acenta ID'si
-    private Long agencyId;
+    private UUID agencyId;
 }
 
 

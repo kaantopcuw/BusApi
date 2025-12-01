@@ -7,11 +7,12 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalTime;
+import java.util.UUID;
 
 @Data
 public class CreateVoyageRequest {
     @NotNull
-    private Long routeId;
+    private UUID routeId;
 
     @NotNull
     private LocalTime departureTime;

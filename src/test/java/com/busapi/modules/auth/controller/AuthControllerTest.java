@@ -23,6 +23,8 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.UUID;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
@@ -77,7 +79,7 @@ class AuthControllerTest {
 
         AuthResponse mockResponse = AuthResponse.builder()
                 .token("dummy-jwt-token")
-                .userId(1L)
+                .userId(UUID.fromString("00000000-0000-0000-0000-000000000001"))
                 .role("ROLE_CUSTOMER")
                 .build();
 
@@ -106,7 +108,7 @@ class AuthControllerTest {
 
         AuthResponse mockResponse = AuthResponse.builder()
                 .token("dummy-jwt-token")
-                .userId(2L)
+                .userId(UUID.fromString("00000000-0000-0000-0000-000000000002"))
                 .role("ROLE_CUSTOMER")
                 .build();
 
@@ -118,7 +120,7 @@ class AuthControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.userId").value(2));
+                .andExpect(jsonPath("$.data.userId").value("00000000-0000-0000-0000-000000000002"));
     }
 
     @Test

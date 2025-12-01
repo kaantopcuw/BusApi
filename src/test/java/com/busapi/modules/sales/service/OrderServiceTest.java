@@ -32,6 +32,7 @@ import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -68,7 +69,7 @@ class OrderServiceTest {
         voyage.setRoute(new Route()); // Null pointer yememek için
 
         trip = new Trip();
-        trip.setId(1L);
+        trip.setId(UUID.fromString("00000000-0000-0000-0000-000000000001"));
         trip.setBus(bus);
         trip.setVoyage(voyage);
         trip.setDate(LocalDate.now().plusDays(1));
@@ -79,7 +80,7 @@ class OrderServiceTest {
     void createOrder_Success() {
         // Given
         CreateOrderRequest request = new CreateOrderRequest();
-        request.setTripId(1L);
+        request.setTripId(UUID.fromString("00000000-0000-0000-0000-000000000001"));
         request.setContactEmail("test@mail.com");
         request.setContactPhone("555");
 
@@ -91,8 +92,8 @@ class OrderServiceTest {
         item.setPassengerTc("111");
         request.setTickets(List.of(item));
 
-        when(tripRepository.findById(1L)).thenReturn(Optional.of(trip));
-        when(ticketRepository.findActiveTicketsByTripId(1L)).thenReturn(Collections.emptyList()); // Hiç bilet yok
+        when(tripRepository.findById(UUID.fromString("00000000-0000-0000-0000-000000000001"))).thenReturn(Optional.of(trip));
+        when(ticketRepository.findActiveTicketsByTripId(UUID.fromString("00000000-0000-0000-0000-000000000001"))).thenReturn(Collections.emptyList()); // Hiç bilet yok
         when(orderRepository.save(any(TicketOrder.class))).thenAnswer(i -> i.getArguments()[0]); // Kaydedileni dön
 
         // When
@@ -113,13 +114,13 @@ class OrderServiceTest {
         existingTicket.setSeatNumber(1);
         existingTicket.setPassengerGender(Gender.FEMALE);
 
-        when(tripRepository.findById(1L)).thenReturn(Optional.of(trip));
+        when(tripRepository.findById(UUID.fromString("00000000-0000-0000-0000-000000000001"))).thenReturn(Optional.of(trip));
         // Repository mock: Zaten satılmış biletleri döndür
-        when(ticketRepository.findActiveTicketsByTripId(1L)).thenReturn(List.of(existingTicket));
+        when(ticketRepository.findActiveTicketsByTripId(UUID.fromString("00000000-0000-0000-0000-000000000001"))).thenReturn(List.of(existingTicket));
 
         // Request: Koltuk 2'ye ERKEK almaya çalışıyor
         CreateOrderRequest request = new CreateOrderRequest();
-        request.setTripId(1L);
+        request.setTripId(UUID.fromString("00000000-0000-0000-0000-000000000001"));
         TicketRequestItem item = new TicketRequestItem();
         item.setSeatNumber(2); // 1'in yanı
         item.setPassengerGender(Gender.MALE); // HATA!
@@ -145,12 +146,12 @@ class OrderServiceTest {
         // FIX: NullPointerException yememek için cinsiyet set ediyoruz
         existingTicket.setPassengerGender(Gender.MALE);
 
-        when(tripRepository.findById(1L)).thenReturn(Optional.of(trip));
+        when(tripRepository.findById(UUID.fromString("00000000-0000-0000-0000-000000000001"))).thenReturn(Optional.of(trip));
         // Mock response
-        when(ticketRepository.findActiveTicketsByTripId(1L)).thenReturn(List.of(existingTicket));
+        when(ticketRepository.findActiveTicketsByTripId(UUID.fromString("00000000-0000-0000-0000-000000000001"))).thenReturn(List.of(existingTicket));
 
         CreateOrderRequest request = new CreateOrderRequest();
-        request.setTripId(1L);
+        request.setTripId(UUID.fromString("00000000-0000-0000-0000-000000000001"));
 
         TicketRequestItem item = new TicketRequestItem();
         item.setSeatNumber(5); // Zaten dolu

@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -22,7 +23,7 @@ public class TicketService {
     private final TripRepository tripRepository;
 
     // Seferdeki koltuk durumlarını getirir (Dolu/Boş)
-    public List<SeatStatusResponse> getSeatStatus(Long tripId) {
+    public List<SeatStatusResponse> getSeatStatus(UUID tripId) {
         Trip trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new ResourceNotFoundException("Trip", "id", tripId));
 

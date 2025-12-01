@@ -14,6 +14,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.UUID;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -44,7 +46,7 @@ class BusServiceTest {
         busEntity.setPlateNumber("34 ABC 123");
 
         BusResponse response = new BusResponse();
-        response.setId(1L);
+        response.setId(UUID.fromString("00000000-0000-0000-0000-000000000001"));
         response.setPlateNumber("34 ABC 123");
 
         when(busRepository.existsByPlateNumber(request.getPlateNumber())).thenReturn(false);

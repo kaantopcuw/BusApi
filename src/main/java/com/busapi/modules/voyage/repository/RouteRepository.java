@@ -8,7 +8,8 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
-public interface RouteRepository extends JpaRepository<Route, Long> {
+public interface RouteRepository extends JpaRepository<Route, UUID> {
 }
 

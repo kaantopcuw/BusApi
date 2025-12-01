@@ -7,12 +7,13 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.util.List;
+import java.util.UUID;
 
 @Data
 public class CreateOrderRequest {
 
     @NotNull
-    private Long tripId;
+    private UUID tripId;
 
     // Misafir kullanıcı için iletişim bilgileri
     @NotBlank

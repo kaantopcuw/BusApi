@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/sales")
@@ -22,7 +23,7 @@ public class OrderController {
 
     // 1. Koltuk Durumlarını Getir (Okuma işlemi TicketService'den devam eder)
     @GetMapping("/trip/{tripId}/seats")
-    public ApiResponse<List<SeatStatusResponse>> getSeatStatus(@PathVariable Long tripId) {
+    public ApiResponse<List<SeatStatusResponse>> getSeatStatus(@PathVariable UUID tripId) {
         return ApiResponse.success(ticketService.getSeatStatus(tripId));
     }
 

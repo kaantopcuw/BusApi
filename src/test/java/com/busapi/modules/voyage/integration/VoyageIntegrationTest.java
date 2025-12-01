@@ -30,6 +30,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -48,10 +49,10 @@ class VoyageIntegrationTest {
     @Autowired private VoyageRepository voyageRepository;
     @Autowired private TripRepository tripRepository;
 
-    private Long districtIdIstanbul;
-    private Long districtIdAnkara;
-    private Long districtIdBolu; // Ara durak
-    private Long busId;
+    private UUID districtIdIstanbul;
+    private UUID districtIdAnkara;
+    private UUID districtIdBolu; // Ara durak
+    private UUID busId;
 
     @BeforeEach
     void setup() {
@@ -96,7 +97,7 @@ class VoyageIntegrationTest {
         stopReq.setDurationMinutesFromStart(180);
         routeReq.setStops(List.of(stopReq));
 
-        Long routeId = voyageService.createRoute(routeReq);
+        UUID routeId = voyageService.createRoute(routeReq);
 
         // Doğrulama
         assertThat(routeId).isNotNull();
@@ -111,7 +112,7 @@ class VoyageIntegrationTest {
         voyageReq.setBusType(BusType.SUITE_2_1);
         voyageReq.setBasePrice(BigDecimal.valueOf(500));
 
-        Long voyageId = voyageService.createVoyageDefinition(voyageReq);
+        UUID voyageId = voyageService.createVoyageDefinition(voyageReq);
 
         // Doğrulama
         assertThat(voyageId).isNotNull();

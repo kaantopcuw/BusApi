@@ -4,10 +4,12 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
+import java.util.UUID;
+
 @Data
 public class CreateStopRequest {
     @NotNull
-    private Long districtId;
+    private UUID districtId;
 
     @Min(0)
     private int stopOrder;

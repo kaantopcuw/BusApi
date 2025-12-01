@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Import;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -46,7 +47,7 @@ class BaseRepositoryTest {
         DummyEntity entity = new DummyEntity();
         entity.setName("Silinecek Item");
         DummyEntity saved = dummyRepository.save(entity);
-        Long id = saved.getId();
+        UUID id = saved.getId();
 
         // When
         dummyRepository.softDelete(id);

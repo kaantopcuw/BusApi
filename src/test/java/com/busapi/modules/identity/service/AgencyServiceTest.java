@@ -17,6 +17,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -52,7 +53,7 @@ class AgencyServiceTest {
     void createAgency_Success() {
         CreateAgencyRequest request = new CreateAgencyRequest();
         request.setName("Yeni Acenta");
-        request.setDistrictId(1L);
+        request.setDistrictId(UUID.fromString("00000000-0000-0000-0000-000000000001"));
 
         District district = new District();
         district.setName("İlçe");
@@ -65,7 +66,7 @@ class AgencyServiceTest {
         response.setName("Yeni Acenta");
 
         when(agencyRepository.existsByName(any())).thenReturn(false);
-        when(districtRepository.findById(1L)).thenReturn(Optional.of(district));
+        when(districtRepository.findById(UUID.fromString("00000000-0000-0000-0000-000000000001"))).thenReturn(Optional.of(district));
         when(agencyMapper.toEntity(request)).thenReturn(agency);
         when(agencyRepository.save(agency)).thenReturn(agency);
         when(agencyMapper.toResponse(agency)).thenReturn(response);

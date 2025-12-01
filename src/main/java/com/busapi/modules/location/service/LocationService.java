@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -29,7 +30,7 @@ public class LocationService {
         return locationMapper.toCityResponseList(cityRepository.findAllByOrderByNameAsc());
     }
 
-    public List<DistrictResponse> getDistrictsByCity(Long cityId) {
+    public List<DistrictResponse> getDistrictsByCity(UUID cityId) {
         // Şehir var mı kontrolü (isteğe bağlı ama iyi pratik)
         if (!cityRepository.existsById(cityId)) {
             throw new ResourceNotFoundException("City", "id", cityId);

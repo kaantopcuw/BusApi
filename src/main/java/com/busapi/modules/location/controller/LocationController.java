@@ -12,6 +12,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/locations")
@@ -28,7 +29,7 @@ public class LocationController {
 
     // Public: Şehre göre ilçe listeleme
     @GetMapping("/cities/{cityId}/districts")
-    public ApiResponse<List<DistrictResponse>> getDistrictsByCity(@PathVariable Long cityId) {
+    public ApiResponse<List<DistrictResponse>> getDistrictsByCity(@PathVariable UUID cityId) {
         return ApiResponse.success(locationService.getDistrictsByCity(cityId));
     }
 

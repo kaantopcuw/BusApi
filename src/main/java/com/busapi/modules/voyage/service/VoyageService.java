@@ -28,6 +28,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -45,7 +46,7 @@ public class VoyageService {
     // --- ROUTE İŞLEMLERİ ---
 
     @Transactional
-    public Long createRoute(CreateRouteRequest request) {
+    public UUID createRoute(CreateRouteRequest request) {
         Route route = new Route();
         route.setName(request.getName());
 
@@ -81,7 +82,7 @@ public class VoyageService {
     // --- VOYAGE (SEFER ŞABLONU) İŞLEMLERİ ---
 
     @Transactional
-    public Long createVoyageDefinition(CreateVoyageRequest request) {
+    public UUID createVoyageDefinition(CreateVoyageRequest request) {
         Route route = routeRepository.findById(request.getRouteId())
                 .orElseThrow(() -> new ResourceNotFoundException("Route", "id", request.getRouteId()));
 
@@ -114,7 +115,7 @@ public class VoyageService {
 
     // Belirli bir sefere otobüs atama
     @Transactional
-    public void assignBusToTrip(Long tripId, Long busId) {
+    public void assignBusToTrip(UUID tripId, UUID busId) {
         Trip trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new ResourceNotFoundException("Trip", "id", tripId));
 
@@ -130,7 +131,7 @@ public class VoyageService {
         tripRepository.save(trip);
     }
 
-    public List<TripResponse> searchTrips(LocalDate date, Long fromDistrictId, Long toDistrictId) {
+    public List<TripResponse> searchTrips(LocalDate date, UUID fromDistrictId, UUID toDistrictId) {
         // Bu basit bir arama. Gerçek hayatta ara duraklardan binişler için daha karmaşık query gerekir.
         // Şimdilik sadece ana kalkış ve varış noktasına göre arıyoruz.
         List<Trip> trips = tripRepository.searchTrips(date, fromDistrictId, toDistrictId);
@@ -151,7 +152,7 @@ public class VoyageService {
     }
 
     @Transactional
-    public void assignCrewToTrip(Long tripId, Long driverId, Long hostId) {
+    public void assignCrewToTrip(UUID tripId, UUID driverId, UUID hostId) {
         Trip trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new ResourceNotFoundException("Trip", "id", tripId));
 
@@ -171,7 +172,7 @@ public class VoyageService {
         tripRepository.save(trip);
     }
 
-    public ManifestResponse getTripManifest(Long tripId) {
+    public ManifestResponse getTripManifest(UUID tripId) {
         Trip trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new ResourceNotFoundException("Trip", "id", tripId));
 

@@ -14,6 +14,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
@@ -31,9 +32,9 @@ class VoyageServiceCrewTest {
     @DisplayName("Atanan kişi Şoför rolünde değilse hata fırlatmalı")
     void assignCrew_InvalidDriverRole_ThrowsException() {
         // Given
-        Long tripId = 1L;
-        Long driverId = 100L;
-        Long hostId = 200L;
+        UUID tripId = UUID.fromString("00000000-0000-0000-0000-000000000001");
+        UUID driverId = UUID.fromString("00000000-0000-0000-0000-000000000100");
+        UUID hostId = UUID.fromString("00000000-0000-0000-0000-000000000200");
 
         Trip trip = new Trip();
 
@@ -59,9 +60,9 @@ class VoyageServiceCrewTest {
     @DisplayName("Doğru rollerle atama başarılı olmalı")
     void assignCrew_Success() {
         // Given
-        Long tripId = 1L;
-        Long driverId = 100L;
-        Long hostId = 200L;
+        UUID tripId = UUID.fromString("00000000-0000-0000-0000-000000000001");
+        UUID driverId = UUID.fromString("00000000-0000-0000-0000-000000000100");
+        UUID hostId = UUID.fromString("00000000-0000-0000-0000-000000000200");
 
         Trip trip = new Trip();
         User driver = new User(); driver.setRole(UserRole.ROLE_DRIVER);

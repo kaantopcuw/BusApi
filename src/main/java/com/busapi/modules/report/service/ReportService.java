@@ -14,6 +14,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.TemporalAdjusters;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -23,7 +24,7 @@ public class ReportService {
     private final TicketRepository ticketRepository;
 
     @Transactional
-    public Long addExpense(CreateExpenseRequest request) {
+    public UUID addExpense(CreateExpenseRequest request) {
         Expense expense = new Expense();
         expense.setTitle(request.getTitle());
         expense.setDescription(request.getDescription());

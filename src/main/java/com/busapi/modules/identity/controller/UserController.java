@@ -10,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
@@ -26,13 +28,13 @@ public class UserController {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ROLE_ADMIN') or @userSecurity.isCurrentUser(#id)")
-    public ApiResponse<UserResponse> getUserById(@PathVariable Long id) {
+    public ApiResponse<UserResponse> getUserById(@PathVariable UUID id) {
         return ApiResponse.success(userService.getUserById(id));
     }
 
     @GetMapping("/{id}/history")
     @PreAuthorize("@userSecurity.isCurrentUser(#id) or hasRole('ROLE_ADMIN')")
-    public ApiResponse<UserHistoryResponse> getUserHistory(@PathVariable Long id) {
+    public ApiResponse<UserHistoryResponse> getUserHistory(@PathVariable UUID id) {
         return ApiResponse.success(userService.getUserHistory(id));
     }
 }

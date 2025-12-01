@@ -7,10 +7,12 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
+import java.util.UUID;
+
 @Data
 public class TicketPurchaseRequest {
     @NotNull
-    private Long tripId;
+    private UUID tripId;
 
     @NotNull
     @Min(1)

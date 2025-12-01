@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -39,7 +40,7 @@ public class BusService {
     }
 
     @Transactional
-    public void deleteBus(Long id) {
+    public void deleteBus(UUID id) {
         if (!busRepository.existsById(id)) {
             throw new ResourceNotFoundException("Bus", "id", id);
         }

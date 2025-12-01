@@ -31,6 +31,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -87,11 +88,11 @@ class VoyageControllerTest {
         // Given
         CreateRouteRequest request = new CreateRouteRequest();
         request.setName("Istanbul - Ankara");
-        request.setDepartureDistrictId(1L);
-        request.setArrivalDistrictId(2L);
+        request.setDepartureDistrictId(UUID.fromString("00000000-0000-0000-0000-000000000001"));
+        request.setArrivalDistrictId(UUID.fromString("00000000-0000-0000-0000-000000000002"));
         // Stops opsiyonel, null bırakabiliriz veya boş liste verebiliriz
 
-        when(voyageService.createRoute(any(CreateRouteRequest.class))).thenReturn(10L);
+        when(voyageService.createRoute(any(CreateRouteRequest.class))).thenReturn(UUID.fromString("00000000-0000-0000-0000-000000000010"));
 
         // When & Then
         mockMvc.perform(post("/api/v1/voyages/routes")
@@ -100,7 +101,7 @@ class VoyageControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data").value(10));
+                .andExpect(jsonPath("$.data").value("00000000-0000-0000-0000-000000000010"));
     }
 
     @Test
@@ -110,8 +111,8 @@ class VoyageControllerTest {
         // Given - Validasyon hatası almamak için tüm zorunlu alanları dolduruyoruz
         CreateRouteRequest request = new CreateRouteRequest();
         request.setName("Test Route");
-        request.setDepartureDistrictId(1L); // EKLENDİ
-        request.setArrivalDistrictId(2L);   // EKLENDİ
+        request.setDepartureDistrictId(UUID.fromString("00000000-0000-0000-0000-000000000001")); // EKLENDİ
+        request.setArrivalDistrictId(UUID.fromString("00000000-0000-0000-0000-000000000002"));   // EKLENDİ
 
         // When & Then
         mockMvc.perform(post("/api/v1/voyages/routes")
@@ -127,12 +128,12 @@ class VoyageControllerTest {
     void createVoyageDefinition_ShouldReturnSuccess() throws Exception {
         // Given
         CreateVoyageRequest request = new CreateVoyageRequest();
-        request.setRouteId(10L);
+        request.setRouteId(UUID.fromString("00000000-0000-0000-0000-000000000010"));
         request.setDepartureTime(LocalTime.of(14, 0));
         request.setBusType(BusType.SUITE_2_1);
         request.setBasePrice(BigDecimal.valueOf(500));
 
-        when(voyageService.createVoyageDefinition(any(CreateVoyageRequest.class))).thenReturn(55L);
+        when(voyageService.createVoyageDefinition(any(CreateVoyageRequest.class))).thenReturn(UUID.fromString("00000000-0000-0000-0000-000000000055"));
 
         // When & Then
         mockMvc.perform(post("/api/v1/voyages/definitions")
@@ -140,7 +141,7 @@ class VoyageControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data").value(55));
+                .andExpect(jsonPath("$.data").value("00000000-0000-0000-0000-000000000055"));
     }
 
     @Test
@@ -162,11 +163,11 @@ class VoyageControllerTest {
     void searchTrips_ShouldReturnList() throws Exception {
         // Given
         LocalDate searchDate = LocalDate.of(2025, 12, 1);
-        Long fromId = 1L;
-        Long toId = 2L;
+        UUID fromId = UUID.fromString("00000000-0000-0000-0000-000000000001");
+        UUID toId = UUID.fromString("00000000-0000-0000-0000-000000000002");
 
         TripResponse trip = new TripResponse();
-        trip.setId(100L);
+        trip.setId(UUID.fromString("00000000-0000-0000-0000-000000000100"));
         trip.setRouteName("Ist - Ank");
         trip.setPrice(BigDecimal.valueOf(450));
 
@@ -181,7 +182,7 @@ class VoyageControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data[0].id").value(100))
+                .andExpect(jsonPath("$.data[0].id").value("00000000-0000-0000-0000-000000000100"))
                 .andExpect(jsonPath("$.data[0].routeName").value("Ist - Ank"));
     }
 }

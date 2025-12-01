@@ -28,6 +28,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
@@ -68,7 +69,7 @@ class OrderControllerTest {
     void createOrder_ShouldReturnSuccess() throws Exception {
         // Given
         CreateOrderRequest request = new CreateOrderRequest();
-        request.setTripId(10L);
+        request.setTripId(UUID.fromString("00000000-0000-0000-0000-000000000010"));
         request.setContactEmail("a@b.com");
         request.setContactPhone("555");
 

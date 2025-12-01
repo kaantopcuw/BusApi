@@ -7,6 +7,7 @@ import lombok.Data;
 import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
+import java.util.UUID;
 
 @Data
 public class CreateRouteRequest {
@@ -14,10 +15,10 @@ public class CreateRouteRequest {
     private String name;
 
     @NotNull
-    private Long departureDistrictId;
+    private UUID departureDistrictId;
 
     @NotNull
-    private Long arrivalDistrictId;
+    private UUID arrivalDistrictId;
 
     @Valid
     private List<CreateStopRequest> stops;

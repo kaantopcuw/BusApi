@@ -4,10 +4,11 @@ import com.busapi.modules.sales.enums.TicketStatus;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 @Data
 public class TicketResponse {
-    private Long id;
+    private UUID id;
     private String pnrCode;
     private String tripDescription; // "Istanbul - Ankara / 14:00"
     private int seatNumber;

@@ -4,13 +4,15 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
+import java.util.UUID;
+
 @Data
 public class CreateAgencyRequest {
     @NotBlank(message = "Acenta adı boş olamaz")
     private String name;
 
     @NotNull(message = "İlçe seçimi zorunludur")
-    private Long districtId;
+    private UUID districtId;
 
     @NotBlank(message = "Adres boş olamaz")
     private String address;

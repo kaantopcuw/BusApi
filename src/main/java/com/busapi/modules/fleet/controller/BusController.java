@@ -10,6 +10,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/fleet/buses")
@@ -32,7 +33,7 @@ public class BusController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ApiResponse<Void> deleteBus(@PathVariable Long id) {
+    public ApiResponse<Void> deleteBus(@PathVariable UUID id) {
         busService.deleteBus(id);
         return ApiResponse.success("Otobüs başarıyla silindi (Arşivlendi).");
     }

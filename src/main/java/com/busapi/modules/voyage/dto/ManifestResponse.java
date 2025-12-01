@@ -5,11 +5,12 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.util.List;
+import java.util.UUID;
 
 @Data
 @Builder
 public class ManifestResponse {
-    private Long tripId;
+    private UUID tripId;
     private String plateNumber;
     private String routeName;
     private String date;

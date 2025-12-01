@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -65,13 +66,13 @@ public class UserService implements UserDetailsService {
         return userMapper.toResponse(savedUser);
     }
 
-    public UserResponse getUserById(Long id) {
+    public UserResponse getUserById(UUID id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
         return userMapper.toResponse(user);
     }
 
-    public User findUserEntityById(Long id) {
+    public User findUserEntityById(UUID id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
     }
@@ -86,7 +87,7 @@ public class UserService implements UserDetailsService {
         userRepository.save(user);
     }
 
-    public UserHistoryResponse getUserHistory(Long userId) {
+    public UserHistoryResponse getUserHistory(UUID userId) {
         User user = findUserEntityById(userId);
 
         // Repository'e bu metodu eklemelisin: findByUserIdOrderByTripDateDesc
