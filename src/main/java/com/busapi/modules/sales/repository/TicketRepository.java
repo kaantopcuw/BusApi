@@ -1,14 +1,14 @@
 package com.busapi.modules.sales.repository;
 
+import com.busapi.core.repository.BaseRepository;
 import com.busapi.modules.sales.entity.Ticket;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
-public interface TicketRepository extends JpaRepository<Ticket, Long> {
+public interface TicketRepository extends BaseRepository<Ticket> {
 
     // Bir seferdeki satılmış (ve iptal edilmemiş) tüm biletler
     @Query("SELECT t FROM Ticket t WHERE t.trip.id = :tripId AND t.status <> 'CANCELLED'")

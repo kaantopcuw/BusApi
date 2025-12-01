@@ -13,10 +13,15 @@ import java.math.BigDecimal;
 
 @Data
 @Entity
-@Table(name = "tickets", indexes = {
-        //@Index(name = "idx_pnr_code", columnList = "pnrCode", unique = true),
-        @Index(name = "idx_ticket_trip", columnList = "trip_id")
-})
+@Table(name = "tickets",
+        indexes = {
+                //@Index(name = "idx_pnr_code", columnList = "pnrCode", unique = true),
+                @Index(name = "idx_ticket_trip", columnList = "trip_id")
+        },
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"trip_id", "seat_number"})
+        }
+)
 @EqualsAndHashCode(callSuper = true)
 public class Ticket extends BaseEntity {
 
