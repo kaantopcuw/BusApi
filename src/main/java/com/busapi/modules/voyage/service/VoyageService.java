@@ -1,10 +1,16 @@
 package com.busapi.modules.voyage.service;
 
+import com.busapi.core.entity.types.UserRole;
+import com.busapi.core.exception.BusinessException;
 import com.busapi.core.exception.ResourceNotFoundException;
 import com.busapi.modules.fleet.entity.Bus;
 import com.busapi.modules.fleet.repository.BusRepository;
+import com.busapi.modules.identity.entity.User;
+import com.busapi.modules.identity.service.UserService;
 import com.busapi.modules.location.entity.District;
 import com.busapi.modules.location.repository.DistrictRepository;
+import com.busapi.modules.sales.entity.Ticket;
+import com.busapi.modules.sales.repository.TicketRepository;
 import com.busapi.modules.voyage.dto.*;
 import com.busapi.modules.voyage.entity.Route;
 import com.busapi.modules.voyage.entity.RouteStop;
@@ -20,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,6 +39,8 @@ public class VoyageService {
     private final TripRepository tripRepository;
     private final DistrictRepository districtRepository;
     private final BusRepository busRepository;
+    private final UserService userService;
+    private final TicketRepository ticketRepository;
 
     // --- ROUTE İŞLEMLERİ ---
 
@@ -139,5 +148,53 @@ public class VoyageService {
             }
             return res;
         }).collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void assignCrewToTrip(Long tripId, Long driverId, Long hostId) {
+        Trip trip = tripRepository.findById(tripId)
+                .orElseThrow(() -> new ResourceNotFoundException("Trip", "id", tripId));
+
+        User driver = userService.findUserEntityById(driverId); // Entity dönen metodu public yapmalısın
+        User host = userService.findUserEntityById(hostId); // Entity dönen metodu public yapmalısın
+
+        // Rol kontrolü (Business Rule)
+        if (driver.getRole() != UserRole.ROLE_DRIVER) {
+            throw new BusinessException("Seçilen kullanıcı Şoför değil!");
+        }
+        if (host.getRole() != UserRole.ROLE_HOST) {
+            throw new BusinessException("Seçilen kullanıcı Muavin değil!");
+        }
+
+        trip.setDriver(driver);
+        trip.setHost(host);
+        tripRepository.save(trip);
+    }
+
+    public ManifestResponse getTripManifest(Long tripId) {
+        Trip trip = tripRepository.findById(tripId)
+                .orElseThrow(() -> new ResourceNotFoundException("Trip", "id", tripId));
+
+        List<Ticket> tickets = ticketRepository.findActiveTicketsByTripId(tripId);
+
+        List<ManifestResponse.PassengerInfo> passengers = tickets.stream()
+                .map(t -> ManifestResponse.PassengerInfo.builder()
+                        .seatNumber(t.getSeatNumber())
+                        .fullName(t.getPassengerName() + " " + t.getPassengerSurname())
+                        .tcNo(t.getPassengerTc()) // İleride rol kontrolüne göre maskelenebilir
+                        .phone(t.getPassengerPhone())
+                        .status(t.getStatus())
+                        .build())
+                .sorted(Comparator.comparingInt(ManifestResponse.PassengerInfo::getSeatNumber))
+                .toList();
+
+        return ManifestResponse.builder()
+                .tripId(trip.getId())
+                .plateNumber(trip.getBus() != null ? trip.getBus().getPlateNumber() : "ATANMADI")
+                .routeName(trip.getVoyage().getRoute().getName())
+                .date(trip.getDate().toString())
+                .time(trip.getVoyage().getDepartureTime().toString())
+                .passengers(passengers)
+                .build();
     }
 }

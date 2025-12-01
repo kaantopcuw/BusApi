@@ -2,6 +2,7 @@ package com.busapi.modules.identity.controller;
 
 import com.busapi.core.result.ApiResponse;
 import com.busapi.modules.identity.dto.CreateUserRequest;
+import com.busapi.modules.identity.dto.UserHistoryResponse;
 import com.busapi.modules.identity.dto.UserResponse;
 import com.busapi.modules.identity.service.UserService;
 import jakarta.validation.Valid;
@@ -27,5 +28,11 @@ public class UserController {
     @PreAuthorize("hasRole('ROLE_ADMIN') or @userSecurity.isCurrentUser(#id)")
     public ApiResponse<UserResponse> getUserById(@PathVariable Long id) {
         return ApiResponse.success(userService.getUserById(id));
+    }
+
+    @GetMapping("/{id}/history")
+    @PreAuthorize("@userSecurity.isCurrentUser(#id) or hasRole('ROLE_ADMIN')")
+    public ApiResponse<UserHistoryResponse> getUserHistory(@PathVariable Long id) {
+        return ApiResponse.success(userService.getUserHistory(id));
     }
 }

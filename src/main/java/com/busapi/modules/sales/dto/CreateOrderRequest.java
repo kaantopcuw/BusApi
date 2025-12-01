@@ -1,0 +1,37 @@
+package com.busapi.modules.sales.dto;
+
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import lombok.Data;
+
+import java.util.List;
+
+@Data
+public class CreateOrderRequest {
+
+    @NotNull
+    private Long tripId;
+
+    // Misafir kullanıcı için iletişim bilgileri
+    @NotBlank
+    private String contactEmail;
+
+    @NotBlank
+    private String contactPhone;
+
+    @Valid
+    @NotNull(message = "Ödeme bilgisi zorunludur")
+    private PaymentInfoRequest paymentInfo;
+
+    // Fatura (Opsiyonel olabilir ama şimdilik alalım)
+    @Valid
+    private BillingAddressRequest billingAddress;
+
+    // Sepetteki biletler
+    @NotEmpty(message = "En az bir bilet seçmelisiniz")
+    @Valid
+    private List<TicketRequestItem> tickets;
+}
+

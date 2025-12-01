@@ -5,9 +5,10 @@ import com.busapi.modules.identity.dto.UserResponse;
 import com.busapi.modules.identity.entity.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.ReportingPolicy;
 
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface UserMapper {
 
     // Request -> Entity (Password şifreleme serviste yapılacak, burada ignore ediyoruz)

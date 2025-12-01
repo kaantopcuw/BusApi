@@ -1,9 +1,7 @@
 package com.busapi.modules.voyage.controller;
 
 import com.busapi.core.result.ApiResponse;
-import com.busapi.modules.voyage.dto.CreateRouteRequest;
-import com.busapi.modules.voyage.dto.CreateVoyageRequest;
-import com.busapi.modules.voyage.dto.TripResponse;
+import com.busapi.modules.voyage.dto.*;
 import com.busapi.modules.voyage.service.VoyageService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -57,5 +55,21 @@ public class VoyageController {
             @RequestParam Long fromId,
             @RequestParam Long toId) {
         return ApiResponse.success(voyageService.searchTrips(date, fromId, toId));
+    }
+
+    @PutMapping("/trips/{tripId}/assign-crew")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ApiResponse<Void> assignCrew(
+            @PathVariable Long tripId,
+            @Valid @RequestBody AssignCrewRequest request) {
+
+        voyageService.assignCrewToTrip(tripId, request.getDriverId(), request.getHostId());
+        return ApiResponse.success("Sefer personeli başarıyla atandı.");
+    }
+
+    @GetMapping("/trips/{tripId}/manifest")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_AGENCY_STAFF', 'ROLE_DRIVER', 'ROLE_HOST')")
+    public ApiResponse<ManifestResponse> getManifest(@PathVariable Long tripId) {
+        return ApiResponse.success(voyageService.getTripManifest(tripId));
     }
 }

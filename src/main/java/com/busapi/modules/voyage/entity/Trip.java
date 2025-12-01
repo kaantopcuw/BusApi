@@ -2,6 +2,7 @@ package com.busapi.modules.voyage.entity;
 
 import com.busapi.core.entity.BaseEntity;
 import com.busapi.modules.fleet.entity.Bus;
+import com.busapi.modules.identity.entity.User;
 import com.busapi.modules.voyage.enums.TripStatus;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -31,6 +32,14 @@ public class Trip extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "bus_id") // O günkü atanan fiziksel otobüs
     private Bus bus;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "driver_user_id")
+    private User driver; // Role: DRIVER olmalı
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "host_user_id")
+    private User host; // Role: HOST (Muavin) olmalı
 
     @Enumerated(EnumType.STRING)
     private TripStatus status;

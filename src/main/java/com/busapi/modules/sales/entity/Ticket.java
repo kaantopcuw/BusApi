@@ -14,7 +14,7 @@ import java.math.BigDecimal;
 @Data
 @Entity
 @Table(name = "tickets", indexes = {
-        @Index(name = "idx_pnr_code", columnList = "pnrCode", unique = true),
+        //@Index(name = "idx_pnr_code", columnList = "pnrCode", unique = true),
         @Index(name = "idx_ticket_trip", columnList = "trip_id")
 })
 @EqualsAndHashCode(callSuper = true)
@@ -23,6 +23,11 @@ public class Ticket extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "trip_id", nullable = false)
     private Trip trip;
+
+    // YENİ: Bilet artık bir Siparişe bağlı
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_id", nullable = false)
+    private TicketOrder order;
 
     // Bileti satın alan üye (Misafir ise null olabilir)
     @ManyToOne(fetch = FetchType.LAZY)
@@ -54,7 +59,4 @@ public class Ticket extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private TicketStatus status;
-
-    @Column(nullable = false, unique = true)
-    private String pnrCode;
 }

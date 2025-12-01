@@ -1,6 +1,7 @@
 package com.busapi.modules.identity.entity;
 
 import com.busapi.core.entity.BaseEntity;
+import com.busapi.modules.location.entity.District;
 import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -17,10 +18,11 @@ public class Agency extends BaseEntity {
     private String name;
     private String address;
     private String contactPhone;
+    private String taxNumber; // Kurumsal fatura için gerekli olabilir
     private boolean isActive = true;// Acenta kapatıldı mı?
 
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "district_id")
-//    private District location; // İlçe bilgisi şehri de kapsar
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "district_id")
+    private District location; // İlçe bilgisi şehri de kapsar
 
 }

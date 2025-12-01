@@ -6,15 +6,17 @@ import lombok.Data;
 
 @Data
 public class CreateAgencyRequest {
-    @NotBlank
+    @NotBlank(message = "Acenta adı boş olamaz")
     private String name;
 
-    @NotNull
+    @NotNull(message = "İlçe seçimi zorunludur")
     private Long districtId;
 
-    @NotBlank
+    @NotBlank(message = "Adres boş olamaz")
     private String address;
 
-    @NotBlank
+    @NotBlank(message = "Telefon boş olamaz")
     private String contactPhone;
+
+    private String taxNumber;
 }

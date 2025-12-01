@@ -1,8 +1,11 @@
 package com.busapi.modules.report.integration;
 
+import com.busapi.core.entity.types.UserRole;
 import com.busapi.modules.fleet.entity.Bus;
 import com.busapi.modules.fleet.enums.BusType;
 import com.busapi.modules.fleet.repository.BusRepository;
+import com.busapi.modules.identity.entity.User;
+import com.busapi.modules.identity.repository.UserRepository;
 import com.busapi.modules.location.entity.City;
 import com.busapi.modules.location.entity.District;
 import com.busapi.modules.location.repository.CityRepository;
@@ -12,8 +15,10 @@ import com.busapi.modules.report.dto.DashboardStatsResponse;
 import com.busapi.modules.report.enums.ExpenseType;
 import com.busapi.modules.report.service.ReportService;
 import com.busapi.modules.sales.entity.Ticket;
+import com.busapi.modules.sales.entity.TicketOrder;
 import com.busapi.modules.sales.enums.Gender;
 import com.busapi.modules.sales.enums.TicketStatus;
+import com.busapi.modules.sales.repository.TicketOrderRepository;
 import com.busapi.modules.sales.repository.TicketRepository;
 import com.busapi.modules.voyage.entity.Route;
 import com.busapi.modules.voyage.entity.Trip;
@@ -43,8 +48,10 @@ class ReportIntegrationTest {
 
     @Autowired private ReportService reportService;
 
-    // Veri hazırlığı için gerekli repositoryler
+    // Repositoryler
     @Autowired private TicketRepository ticketRepository;
+    @Autowired private TicketOrderRepository orderRepository; // Sipariş için gerekli
+    @Autowired private UserRepository userRepository; // Order buyer için
     @Autowired private CityRepository cityRepository;
     @Autowired private DistrictRepository districtRepository;
     @Autowired private RouteRepository routeRepository;
@@ -54,7 +61,14 @@ class ReportIntegrationTest {
 
     @BeforeEach
     void setup() {
-        // 1. Altyapıyı Kur (Şehir, Rota, Otobüs, Sefer)
+        // 1. Altyapı (User, City, Route, Bus, Voyage, Trip)
+
+        // Siparişi yapan kullanıcı (Opsiyonel ama iyi pratik)
+        User buyer = new User();
+        buyer.setFirstName("Test"); buyer.setLastName("Buyer"); buyer.setEmail("buyer@test.com");
+        buyer.setPassword("pass"); buyer.setPhoneNumber("555"); buyer.setRole(UserRole.ROLE_CUSTOMER);
+        userRepository.save(buyer);
+
         City city = new City(); city.setName("Report City"); city.setPlateCode(88);
         cityRepository.save(city);
         District d1 = new District(); d1.setName("Dist X"); d1.setCity(city);
@@ -73,20 +87,43 @@ class ReportIntegrationTest {
         Trip trip = new Trip(); trip.setVoyage(voyage); trip.setBus(bus); trip.setDate(LocalDate.now()); trip.setStatus(TripStatus.SCHEDULED);
         tripRepository.save(trip);
 
-        // 2. Bilet Satışı Simülasyonu (Manual Ticket Save)
-        // 2 Adet Bilet satalım (100 TL * 2 = 200 TL Ciro)
+        // 2. SİPARİŞ (ORDER) VE BİLET (TICKET) OLUŞTURMA
+        // Yeni yapıda biletler tek başına havada duramaz, bir Order'a bağlı olmalıdır.
+
+        TicketOrder order = new TicketOrder();
+        order.setBuyer(buyer);
+        order.setContactEmail("buyer@test.com");
+        order.setContactPhone("5551112233");
+        order.setOrderPnr("PNR-REPORT-001"); // Order PNR buraya geldi
+        order.setTotalAmount(BigDecimal.valueOf(200)); // 2 bilet * 100
+
+        // Bilet 1
         Ticket t1 = new Ticket();
-        t1.setTrip(trip); t1.setSeatNumber(1); t1.setPrice(BigDecimal.valueOf(100)); t1.setStatus(TicketStatus.SOLD);
-        t1.setPassengerName("A"); t1.setPassengerSurname("B"); t1.setPassengerTc("1"); t1.setPassengerGender(Gender.MALE); t1.setPnrCode("PNR001");
-        ticketRepository.save(t1);
+        t1.setTrip(trip);
+        t1.setOrder(order); // İlişki kuruldu
+        t1.setSeatNumber(1);
+        t1.setPrice(BigDecimal.valueOf(100));
+        t1.setStatus(TicketStatus.SOLD);
+        t1.setPassengerName("A"); t1.setPassengerSurname("B"); t1.setPassengerTc("1"); t1.setPassengerGender(Gender.MALE);
+        // t1.setPnrCode("PNR001"); // BU ARTIK YOK, SİLDİK.
 
+        // Bilet 2
         Ticket t2 = new Ticket();
-        t2.setTrip(trip); t2.setSeatNumber(2); t2.setPrice(BigDecimal.valueOf(100)); t2.setStatus(TicketStatus.SOLD);
-        t2.setPassengerName("C"); t2.setPassengerSurname("D"); t2.setPassengerTc("2"); t2.setPassengerGender(Gender.MALE); t2.setPnrCode("PNR002");
-        ticketRepository.save(t2);
+        t2.setTrip(trip);
+        t2.setOrder(order); // İlişki kuruldu
+        t2.setSeatNumber(2);
+        t2.setPrice(BigDecimal.valueOf(100));
+        t2.setStatus(TicketStatus.SOLD);
+        t2.setPassengerName("C"); t2.setPassengerSurname("D"); t2.setPassengerTc("2"); t2.setPassengerGender(Gender.MALE);
 
-        // 3. Gider Ekleme Simülasyonu
-        // 50 TL Yakıt Gideri
+        // Listeye ekle (Cascade Save için)
+        order.getTickets().add(t1);
+        order.getTickets().add(t2);
+
+        // Sadece Order'ı kaydetmek yeterli, CascadeType.ALL sayesinde biletler de kaydedilir.
+        orderRepository.save(order);
+
+        // 3. Gider Ekleme
         CreateExpenseRequest expenseReq = new CreateExpenseRequest();
         expenseReq.setTitle("Mazot");
         expenseReq.setAmount(BigDecimal.valueOf(50));
