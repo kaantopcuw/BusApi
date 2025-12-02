@@ -33,6 +33,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // --- PUBLIC ENDPOINTS ---
                         .requestMatchers(
+                                //"/api/xss-test/**",
                                 "/api/v1/auth/**",          // Auth modülü
                                 "/api/v1/public/**",        // Varsa public API'ler
                                 "/api/v1/locations/**",     // Lokasyonları public yapmıştık
