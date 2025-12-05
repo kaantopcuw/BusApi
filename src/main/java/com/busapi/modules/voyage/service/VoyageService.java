@@ -223,41 +223,86 @@ public class VoyageService {
                 .toList();
     }
 
-    // Frontend'e tüm haritayı tek seferde dönen metod
+    // --- GÜNCELLENMİŞ MATRİS ALGORİTMASI ---
     public List<RouteMapResponse> getFullRouteMap() {
         List<Route> allRoutes = routeRepository.findAllRoutesWithDetails();
 
-        // 1. Rotaları Kalkış Noktasına (DeparturePoint) göre grupla
-        Map<UUID, List<Route>> groupedRoutes = allRoutes.stream()
-                .collect(Collectors.groupingBy(r -> r.getDeparturePoint().getId()));
+        // Key: Origin ID (Kalkış İlçe ID)
+        // Value: Gidilebilecek Varış Noktaları (DestinationDTO Listesi)
+        // Map kullanarak aynı kalkış noktasından farklı rotalarla gidilen yerleri birleştiriyoruz.
+        Map<UUID, List<DestinationDTO>> adjacencyList = new HashMap<>();
 
+        // Yardımcı Map: ID'den Label bulmak için (Response oluştururken lazım olacak)
+        Map<UUID, String> districtIdToLabelMap = new HashMap<>();
+
+        for (Route route : allRoutes) {
+            // 1. Güzergahı Sıralı Bir Liste Haline Getir
+            // Örn: [Enez, Keşan, Tekirdağ, Silivri, İstanbul]
+            List<District> path = new ArrayList<>();
+
+            // Başlangıç
+            path.add(route.getDeparturePoint());
+
+            // Ara Duraklar (Sırasına göre)
+            route.getStops().stream()
+                    .sorted(Comparator.comparingInt(RouteStop::getStopOrder))
+                    .forEach(stop -> path.add(stop.getDistrict()));
+
+            // Bitiş
+            path.add(route.getArrivalPoint());
+
+            // 2. Matrisi Doldur (Forward Pass)
+            // i = Kalkış Adayı, j = Varış Adayı
+            for (int i = 0; i < path.size() - 1; i++) {
+                District origin = path.get(i);
+                String originLabel = origin.getCity().getName() + " - " + origin.getName();
+                districtIdToLabelMap.put(origin.getId(), originLabel);
+
+                for (int j = i + 1; j < path.size(); j++) {
+                    District dest = path.get(j);
+                    String destLabel = dest.getCity().getName() + " - " + dest.getName();
+
+                    // Varış DTO'su
+                    DestinationDTO destDTO = DestinationDTO.builder()
+                            .id(dest.getId())
+                            .label(destLabel)
+                            .build();
+
+                    // Listeye Ekle (Varsa getir yoksa yeni liste oluştur)
+                    adjacencyList.computeIfAbsent(origin.getId(), k -> new ArrayList<>()).add(destDTO);
+                }
+            }
+        }
+
+        // 3. Map'i Response Formatına Çevir
         List<RouteMapResponse> response = new ArrayList<>();
 
-        // 2. Her grup için DTO oluştur
-        groupedRoutes.forEach((originId, routes) -> {
-            // Grubun ilk elemanından kalkış noktası bilgilerini al
-            District originDist = routes.get(0).getDeparturePoint();
+        for (Map.Entry<UUID, List<DestinationDTO>> entry : adjacencyList.entrySet()) {
+            UUID originId = entry.getKey();
 
-            // Varış noktalarını listeye çevir (Tekrarları önlemek için Set kullanılabilir ama Route unique ise gerekmez)
-            List<DestinationDTO> destinations = routes.stream()
-                    .map(r -> DestinationDTO.builder()
-                            .id(r.getArrivalPoint().getId())
-                            .label(r.getArrivalPoint().getCity().getName() + " - " + r.getArrivalPoint().getName())
-                            .build())
-                    .distinct() // Aynı yere birden fazla rota varsa (farklı yollardan) tekile indir
-                    .sorted(Comparator.comparing(DestinationDTO::getLabel))
+            // Gidilecek yerlerde tekrarı önle (Örn: Hem Rota A hem Rota B ile İstanbul'a gidiliyorsa tek gözüksün)
+            // distinct() kullanabilmek için DestinationDTO'da equals/hashCode olması lazım veya stream distinct key trick
+            List<DestinationDTO> uniqueDestinations = entry.getValue().stream()
+                    .filter(distinctByKey(DestinationDTO::getId)) // ID'ye göre tekilleştir
+                    .sorted(Comparator.comparing(DestinationDTO::getLabel)) // Alfabetik sırala
                     .collect(Collectors.toList());
 
             response.add(RouteMapResponse.builder()
                     .originId(originId)
-                    .originLabel(originDist.getCity().getName() + " - " + originDist.getName())
-                    .destinations(destinations)
+                    .originLabel(districtIdToLabelMap.get(originId))
+                    .destinations(uniqueDestinations)
                     .build());
-        });
+        }
 
-        // Şehir ismine göre sırala
+        // Sonuç listesini de Şehir ismine göre sırala
         response.sort(Comparator.comparing(RouteMapResponse::getOriginLabel));
 
         return response;
+    }
+
+    // Stream Distinct için Yardımcı Metod
+    private static <T> java.util.function.Predicate<T> distinctByKey(java.util.function.Function<? super T, ?> keyExtractor) {
+        Set<Object> seen = java.util.concurrent.ConcurrentHashMap.newKeySet();
+        return t -> seen.add(keyExtractor.apply(t));
     }
 }

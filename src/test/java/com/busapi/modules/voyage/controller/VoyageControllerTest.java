@@ -224,4 +224,46 @@ class VoyageControllerTest {
                 .andExpect(jsonPath("$.data[0].destinations[0].label").value("Ankara - Aşti"))
                 .andExpect(jsonPath("$.data[0].destinations[1].label").value("İzmir - Otogar"));
     }
+
+    @Test
+    @DisplayName("Rota haritası (Route Map) başarılı şekilde dönmeli - Public Endpoint")
+    void getRouteMap_ShouldReturnSuccess() throws Exception {
+        // Given
+        // Senaryo: Enez'den kalkan bir otobüs Keşan ve İstanbul'a gidebiliyor.
+
+        // 1. Varış Noktalarını Hazırla
+        DestinationDTO destKesan = DestinationDTO.builder()
+                .id(UUID.fromString("00000000-0000-0000-0000-000000000001"))
+                .label("Edirne - Keşan")
+                .build();
+
+        DestinationDTO destIstanbul = DestinationDTO.builder()
+                .id(UUID.fromString("00000000-0000-0000-0000-000000000002"))
+                .label("İstanbul - Esenler")
+                .build();
+
+        // 2. Kalkış Noktasını Hazırla
+        RouteMapResponse originEnez = RouteMapResponse.builder()
+                .originId(UUID.fromString("00000000-0000-0000-0000-000000000003"))
+                .originLabel("Edirne - Enez")
+                .destinations(List.of(destKesan, destIstanbul))
+                .build();
+
+        // 3. Service Mockla
+        when(voyageService.getFullRouteMap()).thenReturn(List.of(originEnez));
+
+        // When & Then
+        // NOT: @WithMockUser kullanmıyoruz çünkü bu endpoint herkese açık olmalı (permitAll)
+        mockMvc.perform(get("/api/v1/voyages/search/route-map")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk()) // 200 Dönmeli
+                .andExpect(jsonPath("$.success").value(true))
+
+                // Kalkış Kontrolü
+                .andExpect(jsonPath("$.data[0].originLabel").value("Edirne - Enez"))
+
+                // Varış Kontrolü (Nested Array)
+                .andExpect(jsonPath("$.data[0].destinations[0].label").value("Edirne - Keşan"))
+                .andExpect(jsonPath("$.data[0].destinations[1].label").value("İstanbul - Esenler"));
+    }
 }
