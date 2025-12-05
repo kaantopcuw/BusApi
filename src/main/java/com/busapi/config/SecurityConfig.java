@@ -33,12 +33,13 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // --- PUBLIC ENDPOINTS ---
                         .requestMatchers(
-                                //"/api/xss-test/**",
+                                "/api/xss-test/**",
                                 "/api/v1/auth/**",          // Auth modülü
                                 "/api/v1/public/**",        // Varsa public API'ler
                                 "/api/v1/locations/**",     // Lokasyonları public yapmıştık
                                 "/api/v1/sales/trip/*/seats", // Koltuk durumu public
                                 "/api/v1/voyages/trips/search", // Sefer arama public
+                                "/api/v1/voyages/search/route-map", // Harita public
 
                                 // --- SWAGGER UI & OPENAPI ---
                                 "/v3/api-docs/**",          // OpenAPI JSON verisi

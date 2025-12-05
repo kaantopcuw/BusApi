@@ -6,9 +6,7 @@ import com.busapi.core.security.JwtService;
 import com.busapi.core.security.UserSecurity;
 import com.busapi.modules.fleet.enums.BusType;
 import com.busapi.modules.identity.service.UserService;
-import com.busapi.modules.voyage.dto.CreateRouteRequest;
-import com.busapi.modules.voyage.dto.CreateVoyageRequest;
-import com.busapi.modules.voyage.dto.TripResponse;
+import com.busapi.modules.voyage.dto.*;
 import com.busapi.modules.voyage.service.VoyageService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -159,7 +157,8 @@ class VoyageControllerTest {
 
     @Test
     @DisplayName("Herkes (Public) sefer araması yapabilmeli")
-    @WithMockUser // Role fark etmez, hatta @WithMockUser olmasa da (permitAll) çalışmalı ama test context için güvenli
+    @WithMockUser
+        // Role fark etmez, hatta @WithMockUser olmasa da (permitAll) çalışmalı ama test context için güvenli
     void searchTrips_ShouldReturnList() throws Exception {
         // Given
         LocalDate searchDate = LocalDate.of(2025, 12, 1);
@@ -184,5 +183,45 @@ class VoyageControllerTest {
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data[0].id").value("00000000-0000-0000-0000-000000000100"))
                 .andExpect(jsonPath("$.data[0].routeName").value("Ist - Ank"));
+    }
+
+    @Test
+    @DisplayName("Tüm rota haritasını (Pre-loaded Map) getirmeli - Public Endpoint")
+    void getRouteMap_ShouldReturnGroupedList() throws Exception {
+        // Given
+        // Senaryo: İstanbul'dan -> Ankara ve İzmir'e gidilebiliyor.
+
+        // Varış Noktaları
+        DestinationDTO destAnkara = DestinationDTO.builder()
+                .id(UUID.fromString("00000000-0000-0000-0000-000000000001"))
+                .label("Ankara - Aşti").build();
+
+        DestinationDTO destIzmir = DestinationDTO.builder()
+                .id(UUID.fromString("00000000-0000-0000-0000-000000000002")).label("İzmir - Otogar").build();
+
+        // Kalkış Grubu
+        RouteMapResponse istOrigin = RouteMapResponse.builder()
+                .originId(UUID.fromString("00000000-0000-0000-0000-000000000001"))
+                .originLabel("İstanbul - Esenler")
+                .destinations(List.of(destAnkara, destIzmir))
+                .build();
+
+        // Service Mock
+        when(voyageService.getFullRouteMap()).thenReturn(List.of(istOrigin));
+
+        // When & Then
+        // @WithMockUser kullanmadık çünkü bu endpoint permitAll() olmalı.
+        mockMvc.perform(get("/api/v1/voyages/search/route-map")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+
+                // Kalkış Kontrolü
+                .andExpect(jsonPath("$.data[0].originId").value("00000000-0000-0000-0000-000000000001"))
+                .andExpect(jsonPath("$.data[0].originLabel").value("İstanbul - Esenler"))
+
+                // Varış Kontrolü (Array içindeki Array)
+                .andExpect(jsonPath("$.data[0].destinations[0].label").value("Ankara - Aşti"))
+                .andExpect(jsonPath("$.data[0].destinations[1].label").value("İzmir - Otogar"));
     }
 }

@@ -14,6 +14,10 @@ public class District extends BaseEntity {
     @Column(nullable = false)
     private String name;
 
+    private Long population;
+
+    private Integer area; // Yüzölçümü
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "city_id", nullable = false)
     private City city;

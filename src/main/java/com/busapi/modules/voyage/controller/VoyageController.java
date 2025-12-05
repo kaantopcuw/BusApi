@@ -73,4 +73,19 @@ public class VoyageController {
     public ApiResponse<ManifestResponse> getManifest(@PathVariable UUID tripId) {
         return ApiResponse.success(voyageService.getTripManifest(tripId));
     }
+
+//    @GetMapping("/search/origins")
+//    public ApiResponse<List<SearchLocationResponse>> getOrigins() {
+//        return ApiResponse.success(voyageService.getAvailableOrigins());
+//    }
+//
+//    @GetMapping("/search/destinations")
+//    public ApiResponse<List<SearchLocationResponse>> getDestinations(@RequestParam Long fromId) {
+//        return ApiResponse.success(voyageService.getAvailableDestinations(fromId));
+//    }
+
+    @GetMapping("/search/route-map")
+    public ApiResponse<List<RouteMapResponse>> getRouteMap() {
+        return ApiResponse.success(voyageService.getFullRouteMap());
+    }
 }

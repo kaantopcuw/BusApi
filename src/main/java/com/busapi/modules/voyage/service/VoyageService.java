@@ -26,9 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Comparator;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -197,5 +195,69 @@ public class VoyageService {
                 .time(trip.getVoyage().getDepartureTime().toString())
                 .passengers(passengers)
                 .build();
+    }
+
+    // ... Mevcut kodlar ...
+
+    // --- ARAMA MATRİSİ (PORT MATRIX) ---
+
+    public List<SearchLocationResponse> getAvailableOrigins() {
+        List<District> origins = routeRepository.findDistinctDeparturePoints();
+        return mapToSearchResponse(origins);
+    }
+
+    public List<SearchLocationResponse> getAvailableDestinations(Long fromId) {
+        List<District> destinations = routeRepository.findDistinctArrivalPointsByDepartureId(fromId);
+        return mapToSearchResponse(destinations);
+    }
+
+    // Yardımcı Mapping Metodu
+    private List<SearchLocationResponse> mapToSearchResponse(List<District> districts) {
+        return districts.stream()
+                .map(d -> SearchLocationResponse.builder()
+                        .id(d.getId())
+                        .cityName(d.getCity().getName())
+                        .districtName(d.getName())
+                        .label(d.getCity().getName() + " - " + d.getName()) // Frontend'de görünecek kısım
+                        .build())
+                .toList();
+    }
+
+    // Frontend'e tüm haritayı tek seferde dönen metod
+    public List<RouteMapResponse> getFullRouteMap() {
+        List<Route> allRoutes = routeRepository.findAllRoutesWithDetails();
+
+        // 1. Rotaları Kalkış Noktasına (DeparturePoint) göre grupla
+        Map<UUID, List<Route>> groupedRoutes = allRoutes.stream()
+                .collect(Collectors.groupingBy(r -> r.getDeparturePoint().getId()));
+
+        List<RouteMapResponse> response = new ArrayList<>();
+
+        // 2. Her grup için DTO oluştur
+        groupedRoutes.forEach((originId, routes) -> {
+            // Grubun ilk elemanından kalkış noktası bilgilerini al
+            District originDist = routes.get(0).getDeparturePoint();
+
+            // Varış noktalarını listeye çevir (Tekrarları önlemek için Set kullanılabilir ama Route unique ise gerekmez)
+            List<DestinationDTO> destinations = routes.stream()
+                    .map(r -> DestinationDTO.builder()
+                            .id(r.getArrivalPoint().getId())
+                            .label(r.getArrivalPoint().getCity().getName() + " - " + r.getArrivalPoint().getName())
+                            .build())
+                    .distinct() // Aynı yere birden fazla rota varsa (farklı yollardan) tekile indir
+                    .sorted(Comparator.comparing(DestinationDTO::getLabel))
+                    .collect(Collectors.toList());
+
+            response.add(RouteMapResponse.builder()
+                    .originId(originId)
+                    .originLabel(originDist.getCity().getName() + " - " + originDist.getName())
+                    .destinations(destinations)
+                    .build());
+        });
+
+        // Şehir ismine göre sırala
+        response.sort(Comparator.comparing(RouteMapResponse::getOriginLabel));
+
+        return response;
     }
 }
