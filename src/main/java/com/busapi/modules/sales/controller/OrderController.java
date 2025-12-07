@@ -27,6 +27,11 @@ public class OrderController {
         return ApiResponse.success(ticketService.getSeatStatus(tripId));
     }
 
+    @GetMapping("/voyage/{voyageId}/seats")
+    public ApiResponse<List<SeatStatusResponse>> getVoyageSeatTemplate(@PathVariable java.util.UUID voyageId) {
+        return ApiResponse.success(ticketService.getVoyageEmptySeats(voyageId));
+    }
+
     // 2. Sipariş Oluştur (Eski 'buyTicket' yerine bu geldi)
     // Artık TicketPurchaseRequest değil, CreateOrderRequest alıyoruz.
     @PostMapping("/orders")

@@ -10,7 +10,7 @@ import com.busapi.modules.location.repository.DistrictRepository;
 import com.busapi.modules.voyage.dto.CreateRouteRequest;
 import com.busapi.modules.voyage.dto.CreateStopRequest;
 import com.busapi.modules.voyage.dto.CreateVoyageRequest;
-import com.busapi.modules.voyage.dto.TripResponse;
+import com.busapi.modules.voyage.dto.SearchTripResponse;
 import com.busapi.modules.voyage.entity.Route;
 import com.busapi.modules.voyage.entity.Trip;
 import com.busapi.modules.voyage.enums.TripStatus;
@@ -27,9 +27,11 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -103,7 +105,7 @@ class VoyageIntegrationTest {
         assertThat(routeId).isNotNull();
         Route savedRoute = routeRepository.findById(routeId).orElseThrow();
         assertThat(savedRoute.getStops()).hasSize(1);
-        assertThat(savedRoute.getStops().get(0).getDistrict().getId()).isEqualTo(districtIdBolu);
+        assertThat(savedRoute.getStops().getFirst().getDistrict().getId()).isEqualTo(districtIdBolu);
 
         // --- ADIM 2: SEFER ŞABLONU (VOYAGE) OLUŞTURMA ---
         CreateVoyageRequest voyageReq = new CreateVoyageRequest();
@@ -111,6 +113,9 @@ class VoyageIntegrationTest {
         voyageReq.setDepartureTime(LocalTime.of(14, 30));
         voyageReq.setBusType(BusType.SUITE_2_1);
         voyageReq.setBasePrice(BigDecimal.valueOf(500));
+        voyageReq.setValidFrom(LocalDate.now());
+        voyageReq.setValidTo(LocalDate.now().plusYears(1)); // 1 yıl geçerli
+        voyageReq.setDaysOfWeek(Set.of(DayOfWeek.values())); // Her gün çalışır
 
         UUID voyageId = voyageService.createVoyageDefinition(voyageReq);
 
@@ -125,18 +130,18 @@ class VoyageIntegrationTest {
         // Doğrulama
         List<Trip> trips = tripRepository.findAll();
         assertThat(trips).hasSize(1); // 1 şablon vardı, 1 sefer oluşmalı
-        Trip trip = trips.get(0);
+        Trip trip = trips.getFirst();
         assertThat(trip.getDate()).isEqualTo(tomorrow);
         assertThat(trip.getStatus()).isEqualTo(TripStatus.SCHEDULED);
         assertThat(trip.getBus()).isNull(); // Henüz otobüs atanmadı
 
         // --- ADIM 4: SEFER ARAMA ---
-        List<TripResponse> searchResults = voyageService.searchTrips(tomorrow, districtIdIstanbul, districtIdAnkara);
+        SearchTripResponse searchResults = voyageService.searchTrips(tomorrow, districtIdIstanbul, districtIdAnkara);
 
         // Doğrulama
-        assertThat(searchResults).hasSize(1);
-        assertThat(searchResults.get(0).getId()).isEqualTo(trip.getId());
-        assertThat(searchResults.get(0).getPrice()).isEqualByComparingTo(BigDecimal.valueOf(500));
+        assertThat(searchResults.getRealTrips()).hasSize(1);
+        assertThat(searchResults.getRealTrips().getFirst().getId()).isEqualTo(trip.getId());
+        assertThat(searchResults.getRealTrips().getFirst().getPrice()).isEqualByComparingTo(BigDecimal.valueOf(500));
 
         // --- ADIM 5: OTOBÜS ATAMA ---
         voyageService.assignBusToTrip(trip.getId(), busId);

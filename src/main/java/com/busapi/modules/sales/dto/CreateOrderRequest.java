@@ -6,14 +6,19 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
 @Data
 public class CreateOrderRequest {
 
-    @NotNull
+    // Trip ID varsa bu yeterli
     private UUID tripId;
+
+    // Trip ID yoksa bu ikisi ZORUNLU
+    private UUID voyageId; // UUID
+    private LocalDate tripDate;
 
     // Misafir kullanıcı için iletişim bilgileri
     @NotBlank

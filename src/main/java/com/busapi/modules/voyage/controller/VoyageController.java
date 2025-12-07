@@ -51,7 +51,7 @@ public class VoyageController {
 
     // --- PUBLIC SEARCH ---
     @GetMapping("/trips/search")
-    public ApiResponse<List<TripResponse>> searchTrips(
+    public ApiResponse<SearchTripResponse> searchTrips(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             @RequestParam UUID fromId,
             @RequestParam UUID toId) {

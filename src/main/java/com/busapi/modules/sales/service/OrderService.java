@@ -17,7 +17,10 @@ import com.busapi.modules.sales.enums.TicketStatus;
 import com.busapi.modules.sales.repository.TicketOrderRepository;
 import com.busapi.modules.sales.repository.TicketRepository;
 import com.busapi.modules.voyage.entity.Trip;
+import com.busapi.modules.voyage.entity.Voyage;
+import com.busapi.modules.voyage.enums.TripStatus;
 import com.busapi.modules.voyage.repository.TripRepository;
+import com.busapi.modules.voyage.repository.VoyageRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -26,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -37,12 +41,49 @@ public class OrderService {
     private final TicketRepository ticketRepository;
     private final TripRepository tripRepository;
     private final UserService userService;
+    private final VoyageRepository voyageRepository;
 
     @Transactional
     public OrderResponse createOrder(CreateOrderRequest request) {
         // 1. Sefer Kontrolü
-        Trip trip = tripRepository.findById(request.getTripId())
-                .orElseThrow(() -> new ResourceNotFoundException("Trip", "id", request.getTripId()));
+        Trip trip;
+
+        if (request.getTripId() != null) {
+            trip = tripRepository.findById(request.getTripId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Trip", "id", request.getTripId()));
+        }
+        // SENARYO 2: Sanal Sefer (Voyage ID + Tarih gönderilmiş)
+        else if (request.getVoyageId() != null && request.getTripDate() != null) {
+            // Concurrency Check: Belki biz formu doldururken başkası o an oluşturdu?
+            // Önce DB'den var mı diye kontrol et.
+            Optional<Trip> existingTrip = tripRepository.findByVoyageIdAndDate(request.getVoyageId(), request.getTripDate());
+
+            if (existingTrip.isPresent()) {
+                trip = existingTrip.get();
+            } else {
+                // Yoksa YENİ OLUŞTUR
+                Voyage voyage = voyageRepository.findById(request.getVoyageId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Voyage", "id", request.getVoyageId()));
+
+                // Voyage gün kontrolü (Ekstra güvenlik)
+                if (!voyage.getDaysOfWeek().contains(request.getTripDate().getDayOfWeek())) {
+                    throw new BusinessException("Bu sefer seçilen tarihte hizmet vermemektedir.");
+                }
+
+                trip = new Trip();
+                trip.setVoyage(voyage);
+                trip.setDate(request.getTripDate());
+                trip.setDepartureDateTime(LocalDateTime.of(request.getTripDate(), voyage.getDepartureTime()));
+                trip.setStatus(TripStatus.SCHEDULED);
+                // Otobüs ataması yapılmadığı için 'bus' null kalabilir veya
+                // sistemde boşta olan bir otobüsü otomatik atayabiliriz.
+                // Şimdilik null bırakıyoruz, operasyon ekibi sonradan atayacak.
+
+                trip = tripRepository.save(trip);
+            }
+        } else {
+            throw new BusinessException("TripID veya (VoyageID + Date) zorunludur.");
+        }
 
         if (trip.getDate().isBefore(LocalDate.now())) {
             throw new BusinessException("Geçmiş tarihli sefere bilet alınamaz.");

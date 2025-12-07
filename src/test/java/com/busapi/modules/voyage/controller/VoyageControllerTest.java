@@ -26,9 +26,11 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -130,6 +132,9 @@ class VoyageControllerTest {
         request.setDepartureTime(LocalTime.of(14, 0));
         request.setBusType(BusType.SUITE_2_1);
         request.setBasePrice(BigDecimal.valueOf(500));
+        request.setValidFrom(LocalDate.of(2025, 1, 1));
+        request.setValidTo(LocalDate.of(2025, 12, 31));
+        request.setDaysOfWeek(Set.of(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY));
 
         when(voyageService.createVoyageDefinition(any(CreateVoyageRequest.class))).thenReturn(UUID.fromString("00000000-0000-0000-0000-000000000055"));
 
@@ -171,7 +176,7 @@ class VoyageControllerTest {
         trip.setPrice(BigDecimal.valueOf(450));
 
         when(voyageService.searchTrips(eq(searchDate), eq(fromId), eq(toId)))
-                .thenReturn(List.of(trip));
+                .thenReturn(SearchTripResponse.builder().realTrips(List.of(trip)).build());
 
         // When & Then
         mockMvc.perform(get("/api/v1/voyages/trips/search")
@@ -181,8 +186,8 @@ class VoyageControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data[0].id").value("00000000-0000-0000-0000-000000000100"))
-                .andExpect(jsonPath("$.data[0].routeName").value("Ist - Ank"));
+                .andExpect(jsonPath("$.data.realTrips[0].id").value("00000000-0000-0000-0000-000000000100"))
+                .andExpect(jsonPath("$.data.realTrips[0].routeName").value("Ist - Ank"));
     }
 
     @Test

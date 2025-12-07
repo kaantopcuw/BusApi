@@ -90,6 +90,10 @@ public class VoyageService {
         voyage.setBusType(request.getBusType());
         voyage.setBasePrice(request.getBasePrice());
 
+        voyage.setValidFrom(request.getValidFrom());
+        voyage.setValidTo(request.getValidTo());
+        voyage.setDaysOfWeek(request.getDaysOfWeek());
+
         return voyageRepository.save(voyage).getId();
     }
 
@@ -129,24 +133,85 @@ public class VoyageService {
         tripRepository.save(trip);
     }
 
-    public List<TripResponse> searchTrips(LocalDate date, UUID fromDistrictId, UUID toDistrictId) {
-        // Bu basit bir arama. Gerçek hayatta ara duraklardan binişler için daha karmaşık query gerekir.
-        // Şimdilik sadece ana kalkış ve varış noktasına göre arıyoruz.
-        List<Trip> trips = tripRepository.searchTrips(date, fromDistrictId, toDistrictId);
+    // ...
 
-        return trips.stream().map(trip -> {
-            TripResponse res = new TripResponse();
-            res.setId(trip.getId());
-            res.setRouteName(trip.getVoyage().getRoute().getName());
-            res.setDepartureTime(trip.getVoyage().getDepartureTime().toString());
-            res.setDate(trip.getDate().toString());
-            res.setPrice(trip.getVoyage().getBasePrice()); // Dinamik fiyatlama sonra eklenebilir
-            res.setStatus(trip.getStatus().name());
-            if (trip.getBus() != null) {
-                res.setBusPlateNumber(trip.getBus().getPlateNumber());
-            }
-            return res;
-        }).collect(Collectors.toList());
+    public SearchTripResponse searchTrips(LocalDate date, UUID fromId, UUID toId) {
+
+        // 1. GERÇEK SEFERLERİ BUL
+        List<Trip> realTrips = tripRepository.findRealTrips(date, fromId, toId);
+
+        // Gerçek seferlerin Voyage ID'lerini topla (Sanallardan düşmek için)
+        Set<java.util.UUID> existingVoyageIds = realTrips.stream()
+                .map(t -> t.getVoyage().getId())
+                .collect(Collectors.toSet());
+
+        List<TripResponse> realTripResponses = realTrips.stream()
+                .map(this::mapTripToResponse)
+                .toList();
+
+        // 2. SANAL SEFERLERİ (ŞABLONLARI) BUL
+        List<Voyage> candidateVoyages = voyageRepository.findCandidateVoyages(
+                date,
+                date.getDayOfWeek().name(), // GÜNCELLEME: Enum yerine String (.name()) gönderiyoruz
+                fromId,
+                toId
+        );
+
+        List<VoyageResponse> virtualTripResponses = candidateVoyages.stream()
+                // Eğer o gün için zaten gerçek trip varsa, sanal listede gösterme
+                .filter(v -> !existingVoyageIds.contains(v.getId()))
+                .map(this::mapVoyageToResponse)
+                .toList();
+
+        return SearchTripResponse.builder()
+                .realTrips(realTripResponses)
+                .virtualTrips(virtualTripResponses)
+                .build();
+    }
+
+    private VoyageResponse mapVoyageToResponse(Voyage v) {
+        VoyageResponse r = new VoyageResponse();
+        r.setVoyageId(v.getId().toString());
+        r.setRouteName(v.getRoute().getName());
+        r.setDepartureTime(v.getDepartureTime().toString());
+        r.setBusType(v.getBusType().name());
+        r.setPrice(v.getBasePrice());
+        return r;
+    }
+
+    // Yardımcı Mapper: Gerçek Trip -> Response
+    private TripResponse mapTripToResponse(Trip trip) {
+        TripResponse res = new TripResponse();
+        res.setId(trip.getId()); // UUID
+        res.setRouteName(trip.getVoyage().getRoute().getName());
+        res.setDepartureTime(trip.getVoyage().getDepartureTime().toString());
+        res.setDate(trip.getDate().toString());
+        res.setPrice(trip.getVoyage().getBasePrice());
+        res.setStatus(trip.getStatus().name());
+        res.setBusPlateNumber(trip.getBus() != null ? trip.getBus().getPlateNumber() : "Planlanıyor");
+        return res;
+    }
+
+    // Yardımcı Mapper: Voyage (Sanal) -> Trip Response
+    private TripResponse mapVoyageToTripResponse(Voyage voyage, LocalDate date) {
+        TripResponse res = new TripResponse();
+        // DİKKAT: Burada Trip ID yerine Voyage ID veriyoruz.
+        // OrderService, ID'yi bulamazsa VoyageRepository'den arayacak.
+        // Karışıklığı önlemek için ID'leri prefixli yapabiliriz ama UUID zaten unique'dir.
+        // Ancak Voyage ID ile Trip ID çakışmaz (UUID olduğu için).
+        // Sorun şu: Frontend bu ID ile "Koltuk Durumu" sorarsa ne olacak?
+        // O zaman Trip ID olmadığı için hata alırız.
+        // BU YÜZDEN: "Get-or-Create" mantığını burada işletmek yerine,
+        // Koltuk durumu sorgusunda da "Sanal Trip" mantığı kurmalıyız.
+
+        res.setId(voyage.getId()); // Voyage ID'sini geçici olarak kullanıyoruz
+        res.setRouteName(voyage.getRoute().getName());
+        res.setDepartureTime(voyage.getDepartureTime().toString());
+        res.setDate(date.toString());
+        res.setPrice(voyage.getBasePrice());
+        res.setStatus("SCHEDULED"); // Henüz oluşmadı ama planlı
+        res.setBusPlateNumber("Planlanıyor (" + voyage.getBusType() + ")");
+        return res;
     }
 
     @Transactional

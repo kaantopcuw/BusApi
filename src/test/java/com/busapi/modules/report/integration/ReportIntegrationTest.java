@@ -36,8 +36,10 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -81,7 +83,16 @@ class ReportIntegrationTest {
         Bus bus = new Bus(); bus.setPlateNumber("88 TST 88"); bus.setBusType(BusType.STANDARD_2_2); bus.setSeatCapacity(40);
         busRepository.save(bus);
 
-        Voyage voyage = new Voyage(); voyage.setRoute(route); voyage.setBusType(BusType.STANDARD_2_2); voyage.setDepartureTime(LocalTime.of(10,0)); voyage.setBasePrice(BigDecimal.valueOf(100));
+        Voyage voyage = new Voyage();
+        voyage.setRoute(route);
+        voyage.setBusType(BusType.STANDARD_2_2);
+        voyage.setDepartureTime(LocalTime.of(10, 0));
+        voyage.setBasePrice(BigDecimal.valueOf(100));
+
+        // --- EKLENEN KISIM (Zorunlu Alanlar) ---
+        voyage.setValidFrom(LocalDate.now().minusDays(1)); // Dünden beri geçerli
+        voyage.setValidTo(LocalDate.now().plusYears(1));   // 1 Yıl geçerli
+        voyage.setDaysOfWeek(Set.of(DayOfWeek.values()));  // Her gün çalışıyor
         voyageRepository.save(voyage);
 
         Trip trip = new Trip(); trip.setVoyage(voyage); trip.setBus(bus); trip.setDate(LocalDate.now()); trip.setStatus(TripStatus.SCHEDULED);
