@@ -1,7 +1,7 @@
 # 🚌 BusApi - Bus Ticket Reservation System
 
-![Java](https://img.shields.io/badge/Java-21-orange?style=for-the-badge&logo=java)
-![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.2-green?style=for-the-badge&logo=spring)
+![Java](https://img.shields.io/badge/Java-25-orange?style=for-the-badge&logo=java)
+![Spring Boot](https://img.shields.io/badge/Spring_Boot-4.0.1-green?style=for-the-badge&logo=spring)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-blue?style=for-the-badge&logo=postgresql)
 ![Docker](https://img.shields.io/badge/Docker-Available-blue?style=for-the-badge&logo=docker)
 
