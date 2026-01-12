@@ -20,8 +20,8 @@ It provides a comprehensive set of RESTful endpoints for searching expeditions, 
 ## 🛠️ Tech Stack & Architecture
 This project showcases modern backend engineering practices:
 
-* **Language:** Java 21 (Utilizing latest features like Records, Pattern Matching)
-* **Framework:** Spring Boot 3.x (Spring Web, Spring Data JPA, Spring Security)
+* **Language:** Java 25 (Utilizing latest features like Records, Pattern Matching)
+* **Framework:** Spring Boot 4.x (Spring Web, Spring Data JPA, Spring Security)
 * **Database:** PostgreSQL (with complex relational mapping)
 * **Caching:** Redis (For caching frequent expedition searches) *[Eğer eklediyseniz]*
 * **Containerization:** Docker & Docker Compose
@@ -36,7 +36,7 @@ The project follows **Layered Architecture** (Controller -> Service -> Repositor
 ## ⚡ Getting Started
 
 ### Prerequisites
-* Java 21 or higher
+* Java 25
 * Docker & Docker Compose
 
 ### Run with Docker
